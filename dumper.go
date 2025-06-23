@@ -171,7 +171,7 @@ func (td *TCPDumper) packetLoop() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
-	log.Println("packetLoop")
+	// log.Println("packetLoop")
 
 	for {
 		select {

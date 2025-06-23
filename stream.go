@@ -26,6 +26,10 @@ func (factory *tcpStreamFactory) New(net, transport gopacket.Flow, tcp *layers.T
 	srcPort, dstPort := transport.Endpoints()
 	ident := fmt.Sprintf("%s:%s - %s:%s", srcIP, srcPort.String(), dstIP, dstPort.String())
 
+	factory.dumper.mu.Lock()
+	factory.dumper.stats.tcpStreams++
+	factory.dumper.mu.Unlock()
+
 	log.Println("New tcpStreamFactory", ident)
 
 	stream := &tcpStream{
@@ -141,5 +145,6 @@ func (t *tcpStream) ReassemblyComplete(ac reassembly.AssemblerContext) bool {
 	t.factory.wg.Done()
 	t.factory.mu.Unlock()
 
-	return true // 移除流
+	// do not remove the connection to allow last ACK
+	return false
 }
