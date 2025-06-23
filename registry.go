@@ -67,19 +67,6 @@ func (pr *ProtocolRegistry) GetRegisteredProtocols() []string {
 	return protocols
 }
 
-// CreateProcessor 根据协议名创建处理器
-func (pr *ProtocolRegistry) CreateProcessor(protocolName string, ident string) ProtocolProcessor {
-	pr.mu.RLock()
-	defer pr.mu.RUnlock()
-
-	for _, detector := range pr.detectors {
-		if detector.Name() == protocolName {
-			return detector.CreateProcessor(ident)
-		}
-	}
-	return nil
-}
-
 /*
  * 简化开发的便捷函数
  */
@@ -88,14 +75,14 @@ func (pr *ProtocolRegistry) CreateProcessor(protocolName string, ident string) P
 type SimpleProtocolDetector struct {
 	name             string
 	detectFunc       func([]byte, reassembly.TCPFlowDirection) int
-	processorFactory func(string) ProtocolProcessor
+	processorFactory func(StreamInfo) ProtocolProcessor
 }
 
 // NewSimpleProtocolDetector 创建简单协议检测器
 func NewSimpleProtocolDetector(
 	name string,
 	detectFunc func([]byte, reassembly.TCPFlowDirection) int,
-	processorFactory func(string) ProtocolProcessor,
+	processorFactory func(StreamInfo) ProtocolProcessor,
 ) *SimpleProtocolDetector {
 	return &SimpleProtocolDetector{
 		name:             name,
@@ -112,8 +99,8 @@ func (spd *SimpleProtocolDetector) Name() string {
 	return spd.name
 }
 
-func (spd *SimpleProtocolDetector) CreateProcessor(ident string) ProtocolProcessor {
-	return spd.processorFactory(ident)
+func (spd *SimpleProtocolDetector) CreateProcessor(streamInfo StreamInfo) ProtocolProcessor {
+	return spd.processorFactory(streamInfo)
 }
 
 // RegisterProtocol 便捷的协议注册函数
@@ -121,7 +108,7 @@ func RegisterProtocol(
 	registry *ProtocolRegistry,
 	name string,
 	detectFunc func([]byte, reassembly.TCPFlowDirection) int,
-	processorFactory func(string) ProtocolProcessor,
+	processorFactory func(StreamInfo) ProtocolProcessor,
 ) {
 	detector := NewSimpleProtocolDetector(name, detectFunc, processorFactory)
 	registry.Register(detector)
@@ -132,7 +119,7 @@ func RegisterSimpleProtocol(
 	registry *ProtocolRegistry,
 	name string,
 	pattern string,
-	processorFactory func(string) ProtocolProcessor,
+	processorFactory func(StreamInfo) ProtocolProcessor,
 ) {
 	detectFunc := func(data []byte, dir reassembly.TCPFlowDirection) int {
 		if len(data) < len(pattern) {
@@ -153,7 +140,7 @@ func RegisterPatternProtocol(
 	name string,
 	clientPattern string, // 客户端到服务器的模式
 	serverPattern string, // 服务器到客户端的模式
-	processorFactory func(string) ProtocolProcessor,
+	processorFactory func(StreamInfo) ProtocolProcessor,
 ) {
 	detectFunc := func(data []byte, dir reassembly.TCPFlowDirection) int {
 		var pattern string

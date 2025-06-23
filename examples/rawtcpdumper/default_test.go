@@ -25,7 +25,14 @@ func TestDefaultProcessor(t *testing.T) {
 
 // 测试原始数据处理器
 func TestRawProcessor(t *testing.T) {
-	processor := NewRawProcessor("test-stream")
+	streamInfo := tcpdumper.StreamInfo{
+		SrcIP:   "127.0.0.1",
+		SrcPort: "12345",
+		DstIP:   "127.0.0.1",
+		DstPort: "80",
+		Ident:   "test-stream",
+	}
+	processor := NewRawProcessor(streamInfo)
 	assert.NotNil(t, processor)
 	assert.Equal(t, "RAW", processor.GetProtocolName())
 
@@ -44,7 +51,14 @@ func TestDefaultProcessorFactory(t *testing.T) {
 	factory := CreateDefaultRawProcessorFactory()
 	assert.NotNil(t, factory)
 
-	processor := factory("test-stream")
+	streamInfo := tcpdumper.StreamInfo{
+		SrcIP:   "127.0.0.1",
+		SrcPort: "12345",
+		DstIP:   "127.0.0.1",
+		DstPort: "80",
+		Ident:   "test-stream",
+	}
+	processor := factory(streamInfo)
 	assert.NotNil(t, processor)
 	assert.Equal(t, "RAW", processor.GetProtocolName())
 }

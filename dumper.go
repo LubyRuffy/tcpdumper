@@ -74,12 +74,12 @@ func (td *TCPDumper) RegisterProtocolDetector(detector ProtocolDetector) {
 }
 
 // RegisterSimpleProtocol 注册简单协议（基于字符串前缀匹配）
-func (td *TCPDumper) RegisterSimpleProtocol(name, pattern string, processorFactory func(string) ProtocolProcessor) {
+func (td *TCPDumper) RegisterSimpleProtocol(name, pattern string, processorFactory func(StreamInfo) ProtocolProcessor) {
 	RegisterSimpleProtocol(td.registry, name, pattern, processorFactory)
 }
 
 // RegisterPatternProtocol 注册方向敏感的协议
-func (td *TCPDumper) RegisterPatternProtocol(name, clientPattern, serverPattern string, processorFactory func(string) ProtocolProcessor) {
+func (td *TCPDumper) RegisterPatternProtocol(name, clientPattern, serverPattern string, processorFactory func(StreamInfo) ProtocolProcessor) {
 	RegisterPatternProtocol(td.registry, name, clientPattern, serverPattern, processorFactory)
 }
 

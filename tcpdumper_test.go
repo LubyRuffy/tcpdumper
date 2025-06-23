@@ -12,8 +12,8 @@ func TestProtocolRegistry(t *testing.T) {
 	registry := NewProtocolRegistry()
 
 	// 注册测试协议
-	RegisterSimpleProtocol(registry, "Test", "TEST", func(ident string) ProtocolProcessor {
-		return &testProcessor{ident: ident}
+	RegisterSimpleProtocol(registry, "Test", "TEST", func(streamInfo StreamInfo) ProtocolProcessor {
+		return &testProcessor{ident: streamInfo.Ident}
 	})
 
 	// 检查协议是否注册成功
@@ -26,7 +26,14 @@ func TestProtocolRegistry(t *testing.T) {
 	assert.Equal(t, "Test", detector.Name())
 
 	// 测试创建处理器
-	processor := detector.CreateProcessor("test-stream")
+	streamInfo := StreamInfo{
+		SrcIP:   "127.0.0.1",
+		SrcPort: "12345",
+		DstIP:   "127.0.0.1",
+		DstPort: "80",
+		Ident:   "test-stream",
+	}
+	processor := detector.CreateProcessor(streamInfo)
 	assert.NotNil(t, processor)
 	assert.Equal(t, "Test", processor.GetProtocolName())
 }
@@ -72,8 +79,8 @@ func TestCustomProtocolRegistration(t *testing.T) {
 	dumper := NewSimpleDumper()
 
 	// 注册自定义协议
-	dumper.RegisterSimpleProtocol("Echo", "ECHO:", func(ident string) ProtocolProcessor {
-		return &testProcessor{ident: ident}
+	dumper.RegisterSimpleProtocol("Echo", "ECHO:", func(streamInfo StreamInfo) ProtocolProcessor {
+		return &testProcessor{ident: streamInfo.Ident}
 	})
 
 	protocols := dumper.GetRegisteredProtocols()
@@ -100,11 +107,11 @@ func (tp *testProcessor) GetProtocolName() string {
 // 基准测试 - 协议检测性能
 func BenchmarkProtocolDetection(b *testing.B) {
 	registry := NewProtocolRegistry()
-	RegisterSimpleProtocol(registry, "HTTP", "GET ", func(ident string) ProtocolProcessor {
-		return &testProcessor{ident: ident}
+	RegisterSimpleProtocol(registry, "HTTP", "GET ", func(streamInfo StreamInfo) ProtocolProcessor {
+		return &testProcessor{ident: streamInfo.Ident}
 	})
-	RegisterSimpleProtocol(registry, "Test", "TEST", func(ident string) ProtocolProcessor {
-		return &testProcessor{ident: ident}
+	RegisterSimpleProtocol(registry, "Test", "TEST", func(streamInfo StreamInfo) ProtocolProcessor {
+		return &testProcessor{ident: streamInfo.Ident}
 	})
 
 	testData := []byte("GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n")

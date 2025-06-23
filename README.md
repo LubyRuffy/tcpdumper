@@ -121,8 +121,8 @@ func (mpd *MyProtocolDetector) Name() string {
     return "MyProtocol"
 }
 
-func (mpd *MyProtocolDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
-    return &MyProtocolProcessor{ident: ident}
+func (mpd *MyProtocolDetector) CreateProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+    return &MyProtocolProcessor{ident: streamInfo.Ident}
 }
 
 // 注册自定义检测器
@@ -326,7 +326,7 @@ type ProtocolProcessor interface {
 type ProtocolDetector interface {
     Detect(data []byte, dir reassembly.TCPFlowDirection) int
     Name() string
-    CreateProcessor(ident string) ProtocolProcessor
+    	CreateProcessor(streamInfo StreamInfo) ProtocolProcessor
 }
 
 type DefaultProcessorFactory func(ident string) ProtocolProcessor

@@ -78,8 +78,8 @@ func (d *MyProtocolDetector) Name() string {
     return "MyProtocol"
 }
 
-func (d *MyProtocolDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
-    return &MyProtocolProcessor{ident: ident}
+func (d *MyProtocolDetector) CreateProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+    return &MyProtocolProcessor{ident: streamInfo.Ident}
 }
 ```
 

@@ -44,8 +44,8 @@ func ExampleTCPDumper_RegisterSimpleProtocol() {
 	dumper := tcpdumper.NewSimpleDumper()
 
 	// 注册自定义的Echo协议
-	dumper.RegisterSimpleProtocol("Echo", "ECHO:", func(ident string) tcpdumper.ProtocolProcessor {
-		return &EchoProcessor{ident: ident}
+	dumper.RegisterSimpleProtocol("Echo", "ECHO:", func(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+		return &EchoProcessor{ident: streamInfo.Ident}
 	})
 
 	protocols := dumper.GetRegisteredProtocols()
@@ -78,8 +78,8 @@ func ExampleTCPDumper_complete() {
 	dumper := tcpdumper.NewDumper(options)
 
 	// 注册自定义协议
-	dumper.RegisterSimpleProtocol("MyProtocol", "MYPROT", func(ident string) tcpdumper.ProtocolProcessor {
-		return &MyProtocolProcessor{ident: ident}
+	dumper.RegisterSimpleProtocol("MyProtocol", "MYPROT", func(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+		return &MyProtocolProcessor{ident: streamInfo.Ident}
 	})
 
 	// 在实际使用中：
@@ -156,8 +156,8 @@ func (cpd *CustomProtocolDetector) Name() string {
 	return "CustomBinary"
 }
 
-func (cpd *CustomProtocolDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
-	return &CustomBinaryProcessor{ident: ident}
+func (cpd *CustomProtocolDetector) CreateProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+	return &CustomBinaryProcessor{ident: streamInfo.Ident}
 }
 
 // CustomBinaryProcessor 自定义二进制协议处理器

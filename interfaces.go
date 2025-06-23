@@ -34,7 +34,7 @@ type ProtocolDetector interface {
 	Name() string
 
 	// CreateProcessor 创建协议处理器
-	CreateProcessor(ident string) ProtocolProcessor
+	CreateProcessor(streamInfo StreamInfo) ProtocolProcessor
 }
 
 // StreamInfo TCP流信息
@@ -48,7 +48,7 @@ type StreamInfo struct {
 
 // DefaultProcessorFactory 默认处理器工厂函数类型
 // 当没有任何协议匹配时，使用此工厂创建默认处理器
-type DefaultProcessorFactory func(ident string) ProtocolProcessor
+type DefaultProcessorFactory func(streamInfo StreamInfo) ProtocolProcessor
 
 // CaptureOptions 抓包配置选项
 type CaptureOptions struct {

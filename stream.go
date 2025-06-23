@@ -87,13 +87,25 @@ func (t *tcpStream) ReassembledSG(sg reassembly.ScatterGather, ac reassembly.Ass
 		t.mu.Lock()
 		if !t.detected { // 双重检查
 			detector := t.registry.DetectProtocol(data, dir)
+
+			// 构造StreamInfo
+			srcIP, dstIP := t.net.Endpoints()
+			srcPort, dstPort := t.transport.Endpoints()
+			streamInfo := StreamInfo{
+				SrcIP:   srcIP.String(),
+				SrcPort: srcPort.String(),
+				DstIP:   dstIP.String(),
+				DstPort: dstPort.String(),
+				Ident:   t.ident,
+			}
+
 			if detector != nil {
-				t.processor = detector.CreateProcessor(t.ident)
+				t.processor = detector.CreateProcessor(streamInfo)
 				t.detected = true
 			} else {
 				// 没有匹配的协议，使用默认处理器
 				if t.factory.defaultProcessorFactory != nil {
-					t.processor = t.factory.defaultProcessorFactory(t.ident)
+					t.processor = t.factory.defaultProcessorFactory(streamInfo)
 					// 更新未知流统计
 					if t.factory.dumper != nil {
 						t.factory.dumper.mu.Lock()

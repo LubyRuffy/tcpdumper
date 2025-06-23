@@ -66,8 +66,8 @@ func (dd *DNSDetector) Name() string {
 	return "DNS"
 }
 
-func (dd *DNSDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
-	return &DNSProcessor{ident: ident}
+func (dd *DNSDetector) CreateProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+	return &DNSProcessor{ident: streamInfo.Ident}
 }
 
 func main() {

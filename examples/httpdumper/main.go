@@ -169,9 +169,9 @@ func (hd *HTTPDetector) Name() string {
 	return "HTTP"
 }
 
-func (hd *HTTPDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
+func (hd *HTTPDetector) CreateProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
 	hp := &HTTPProcessor{
-		ident:       ident,
+		ident:       streamInfo.Ident,
 		requestBuf:  &bytes.Buffer{},
 		responseBuf: &bytes.Buffer{},
 	}

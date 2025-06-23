@@ -60,15 +60,15 @@ func (rp *RawProcessor) GetProtocolName() string {
 }
 
 // NewRawProcessor 创建原始数据处理器
-func NewRawProcessor(ident string) tcpdumper.ProtocolProcessor {
+func NewRawProcessor(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
 	return &RawProcessor{
-		ident: ident,
+		ident: streamInfo.Ident,
 	}
 }
 
 // CreateDefaultRawProcessorFactory 创建默认的原始数据处理器工厂
 func CreateDefaultRawProcessorFactory() tcpdumper.DefaultProcessorFactory {
-	return func(ident string) tcpdumper.ProtocolProcessor {
-		return NewRawProcessor(ident)
+	return func(streamInfo tcpdumper.StreamInfo) tcpdumper.ProtocolProcessor {
+		return NewRawProcessor(streamInfo)
 	}
 }
