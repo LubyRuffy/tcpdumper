@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/LubyRuffy/tcpdumper"
+	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/reassembly"
 )
 
@@ -76,7 +77,7 @@ func main() {
 		Interface: "en0",
 		BPFFilter: "tcp port 53",
 		SnapLen:   1024,
-		Timeout:   30,
+		Timeout:   pcap.BlockForever,
 	}
 	dumper := tcpdumper.NewDumper(options)
 

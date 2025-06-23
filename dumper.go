@@ -45,7 +45,7 @@ func NewTCPDumper(options *CaptureOptions) *TCPDumper {
 	if options == nil {
 		options = DefaultCaptureOptions()
 	} else if options.Timeout == 0 {
-		options.Timeout = 30
+		options.Timeout = pcap.BlockForever
 	}
 
 	dumper := &TCPDumper{
@@ -106,7 +106,7 @@ func (td *TCPDumper) Start() error {
 			td.options.Interface,
 			int32(td.options.SnapLen),
 			td.options.Promiscuous,
-			time.Duration(td.options.Timeout)*time.Millisecond,
+			td.options.Timeout,
 		)
 	}
 

@@ -68,7 +68,7 @@ func main() {
 			BPFFilter:   bpfFilter,
 			SnapLen:     65536,
 			Promiscuous: true,
-			Timeout:     30, // 毫秒超时，减少数据包接收延迟
+			Timeout:     time.Millisecond * 30, // 毫秒超时，减少数据包接收延迟
 		}
 		dumper = tcpdumper.NewDumper(options)
 	}

@@ -16,7 +16,7 @@ options := &tcpdumper.CaptureOptions{
     BPFFilter:   bpfFilter,
     SnapLen:     65536,
     Promiscuous: true,
-    Timeout:     1, // 这个参数控制数据包读取的超时时间
+    Timeout:     time.Millisecond * 1, // 这个参数控制数据包读取的超时时间
 }
 ```
 
@@ -42,12 +42,12 @@ pcap的超时参数控制着 `pcap_next_ex()` 或 `ReadPacketData()` 函数的�
 
 #### 实时监控场景
 ```go
-Timeout: 1, // 1秒，平衡实时性和性能
+Timeout: 1*time.Second, // 1秒，平衡实时性和性能
 ```
 
 #### 高实时性要求
 ```go
-Timeout: 0.1, // 100毫秒，需要修改为毫秒单位
+Timeout: 100*time.Millisecond, // 100毫秒，需要修改为毫秒单位
 ```
 
 在代码中应该这样设置：
@@ -57,14 +57,14 @@ options := &tcpdumper.CaptureOptions{
     BPFFilter:   bpfFilter,
     SnapLen:     65536,
     Promiscuous: true,
-    Timeout:     1, // 1秒 = 1000毫秒
+    Timeout:     1*time.Second, // 1秒 = 1000毫秒
 }
 ```
 
 #### 低延迟配置示例
 如果需要更低的延迟，可以修改为：
 ```go
-Timeout: 0, // 非阻塞模式，立即返回
+Timeout: 0*time.Second, // 非阻塞模式，立即返回
 ```
 
 但这会显著增加CPU使用率。
@@ -132,7 +132,7 @@ options := &tcpdumper.CaptureOptions{
     BPFFilter:   "tcp port 80",
     SnapLen:     1500,        // 标准以太网帧大小
     Promiscuous: true,
-    Timeout:     1,           // 1秒超时，实时性较好
+    Timeout:     1*time.Second,           // 1秒超时，实时性较好
 }
 ```
 
@@ -143,7 +143,7 @@ options := &tcpdumper.CaptureOptions{
     BPFFilter:   "tcp port 80 and host 192.168.1.100",
     SnapLen:     1500,
     Promiscuous: true,
-    Timeout:     0,           // 非阻塞模式
+    Timeout:     0*time.Second,           // 非阻塞模式
 }
 ```
 

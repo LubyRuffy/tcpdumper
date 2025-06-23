@@ -169,7 +169,7 @@ options := &tcpdumper.CaptureOptions{
     PcapFile:    "",               // pcap文件路径（为空则实时抓包）
     SnapLen:     65536,            // 每个数据包的最大捕获长度
     Promiscuous: true,             // 混杂模式
-    Timeout:     30,               // 超时时间（毫秒）
+    Timeout:     time.Millisecond * 30, // 超时时间（毫秒）
     BPFFilter:   "tcp port 80",    // BPF过滤器
 }
 

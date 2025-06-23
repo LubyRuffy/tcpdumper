@@ -2,6 +2,9 @@
 package tcpdumper
 
 import (
+	"time"
+
+	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/reassembly"
 )
 
@@ -52,12 +55,12 @@ type DefaultProcessorFactory func(streamInfo StreamInfo) ProtocolProcessor
 
 // CaptureOptions 抓包配置选项
 type CaptureOptions struct {
-	Interface   string // 网络接口名称，如 "eth0", "lo0"
-	PcapFile    string // pcap文件路径，如果指定则从文件读取
-	SnapLen     int    // 每个数据包的最大捕获长度
-	Promiscuous bool   // 是否启用混杂模式
-	Timeout     int    // 超时时间（毫秒）
-	BPFFilter   string // BPF过滤器表达式，如 "tcp port 80"
+	Interface   string        // 网络接口名称，如 "eth0", "lo0"
+	PcapFile    string        // pcap文件路径，如果指定则从文件读取
+	SnapLen     int           // 每个数据包的最大捕获长度
+	Promiscuous bool          // 是否启用混杂模式
+	Timeout     time.Duration // pcap读取超时时间
+	BPFFilter   string        // BPF过滤器表达式，如 "tcp port 80"
 }
 
 // DefaultCaptureOptions 返回默认的抓包配置
@@ -66,6 +69,6 @@ func DefaultCaptureOptions() *CaptureOptions {
 		Interface:   "lo0",
 		SnapLen:     65536,
 		Promiscuous: true,
-		Timeout:     30,
+		Timeout:     pcap.BlockForever,
 	}
 }
