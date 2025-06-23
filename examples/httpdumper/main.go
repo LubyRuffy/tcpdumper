@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/LubyRuffy/tcpdumper"
@@ -14,6 +19,33 @@ import (
 type HTTPProcessor struct {
 	ident     string
 	isConnect bool
+
+	mutex    sync.Mutex
+	requests []*http.Request // 请求列表
+	reqIndex int             // 当前读取的偏移
+
+	requestBuf  *bytes.Buffer
+	responseBuf *bytes.Buffer
+}
+
+func (hp *HTTPProcessor) appendRequest(req *http.Request) {
+	hp.mutex.Lock()
+	defer hp.mutex.Unlock()
+	hp.requests = append(hp.requests, req)
+}
+
+func (hp *HTTPProcessor) getLastRequest() *http.Request {
+	hp.mutex.Lock()
+	defer hp.mutex.Unlock()
+
+	// 收到了response但是还没有request
+	if len(hp.requests) < hp.reqIndex+1 {
+		return nil
+	}
+
+	req := hp.requests[hp.reqIndex]
+	hp.reqIndex++
+	return req
 }
 
 func (hp *HTTPProcessor) ProcessData(data []byte, dir reassembly.TCPFlowDirection, start, end bool) error {
@@ -34,17 +66,13 @@ func (hp *HTTPProcessor) ProcessData(data []byte, dir reassembly.TCPFlowDirectio
 
 	// 正常HTTP处理
 	if dir == reassembly.TCPDirClientToServer {
-		// HTTP请求
-		lines := strings.Split(dataStr, "\n")
-		if len(lines) > 0 {
-			fmt.Printf("HTTP/%s [%s]: %s\n", hp.ident, dir, strings.TrimSpace(lines[0]))
-		}
+		hp.mutex.Lock()
+		hp.requestBuf.Write(data)
+		hp.mutex.Unlock()
 	} else {
-		// HTTP响应
-		lines := strings.Split(dataStr, "\n")
-		if len(lines) > 0 {
-			fmt.Printf("HTTP/%s [%s]: %s\n", hp.ident, dir, strings.TrimSpace(lines[0]))
-		}
+		hp.mutex.Lock()
+		hp.responseBuf.Write(data)
+		hp.mutex.Unlock()
 	}
 
 	return nil
@@ -57,6 +85,51 @@ func (hp *HTTPProcessor) Close() error {
 
 func (hp *HTTPProcessor) GetProtocolName() string {
 	return "HTTP"
+}
+
+func (hp *HTTPProcessor) Run() {
+	go func() {
+		buf := bufio.NewReader(hp.requestBuf)
+		for {
+			_, err := buf.Peek(1)
+			if err != nil {
+				return
+			}
+
+			req, err := http.ReadRequest(buf)
+			if err != nil {
+				log.Println("ReadRequest error:", err)
+				return
+			}
+			io.Copy(io.Discard, req.Body)
+			req.Body.Close()
+
+			hp.appendRequest(req)
+			fmt.Println(req)
+		}
+	}()
+
+	go func() {
+		buf := bufio.NewReader(hp.responseBuf)
+		for {
+			_, err := buf.Peek(1)
+			if err != nil {
+				return
+			}
+
+			req := hp.getLastRequest()
+
+			resp, err := http.ReadResponse(buf, req)
+			if err != nil {
+				log.Println("ReadResponse error:", err)
+				return
+			}
+			io.Copy(io.Discard, resp.Body)
+			resp.Body.Close()
+
+			fmt.Println(resp)
+		}
+	}()
 }
 
 // HTTPDetector HTTP协议检测器
@@ -97,7 +170,13 @@ func (hd *HTTPDetector) Name() string {
 }
 
 func (hd *HTTPDetector) CreateProcessor(ident string) tcpdumper.ProtocolProcessor {
-	return &HTTPProcessor{ident: ident}
+	hp := &HTTPProcessor{
+		ident:       ident,
+		requestBuf:  &bytes.Buffer{},
+		responseBuf: &bytes.Buffer{},
+	}
+	hp.Run()
+	return hp
 }
 
 func main() {
