@@ -121,3 +121,32 @@ func BenchmarkProtocolDetection(b *testing.B) {
 		registry.DetectProtocol(testData, reassembly.TCPDirClientToServer)
 	}
 }
+
+func TestNewFileDumper(t *testing.T) {
+	dumper := NewFileDumper("pcap_data/connect_https.pcapng")
+	assert.NotNil(t, dumper)
+	assert.Equal(t, "pcap_data/connect_https.pcapng", dumper.options.PcapFile)
+
+	dumper.Start()
+	dumper.Wait()
+
+	packets, tcpStreams, errors, unknownFlows := dumper.GetStats()
+	assert.Equal(t, uint64(0x36), packets)
+	assert.Equal(t, uint64(1), tcpStreams)
+	assert.Equal(t, uint64(0), errors)
+	assert.Equal(t, uint64(0), unknownFlows)
+}
+
+func TestNewFileDumper_from_response(t *testing.T) {
+	dumper := NewFileDumper("pcap_data/connect_https_from_response.pcapng")
+	assert.NotNil(t, dumper)
+
+	dumper.Start()
+	dumper.Wait()
+
+	packets, tcpStreams, errors, unknownFlows := dumper.GetStats()
+	assert.Equal(t, uint64(0x30), packets) // 48个包，从response开始的pcap文件
+	assert.Equal(t, uint64(1), tcpStreams)
+	assert.Equal(t, uint64(0), errors)
+	assert.Equal(t, uint64(0), unknownFlows)
+}

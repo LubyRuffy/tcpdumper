@@ -133,11 +133,19 @@ func (td *TCPDumper) Start() error {
 // Stop 停止捕获数据包
 func (td *TCPDumper) Stop() {
 	close(td.stopChan)
+	td.Wait()
+}
+
+// Wait 等待所有数据包处理完成
+func (td *TCPDumper) Wait() {
 	td.wg.Wait()
 
 	if td.handle != nil {
 		td.handle.Close()
 	}
+
+	// 强制清理所有TCP流，确保ReassemblyComplete被调用
+	td.assembler.FlushAll()
 
 	// 等待所有TCP流处理完成
 	td.factory.WaitGoRoutines()
